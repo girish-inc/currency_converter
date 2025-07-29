@@ -1,12 +1,12 @@
-import { useState } from 'react'
+import {useEffect, useState} from 'react'
 import {InputBox} from './components'
 import useCurrencyInfo from './hooks/useCurrencyInfo'
 
 function App() {
 
-    const [amount, setAmount] = useState()
-    const [from, setFrom] = useState("usd")
-    const [to, setTo] = useState("inr")
+    const [amount, setAmount] = useState(1)
+    const [from, setFrom] = useState("USD")
+    const [to, setTo] = useState("INR")
     const [convertedAmount, setConvertedAmount] = useState()
 
     const currencyInfo = useCurrencyInfo(from)
@@ -28,6 +28,10 @@ function App() {
             setConvertedAmount(0);
         }
     }
+
+    useEffect(() => {
+        convert()
+    }, [currencyInfo, amount, from, to, convert])
 
     return (
         <div
@@ -75,7 +79,7 @@ function App() {
                             />
                         </div>
                         <button type="submit" className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg">
-                            Convert {from.toUpperCase()} to {to.toUpperCase()}
+                            Convert {from} to {to}
                         </button>
                     </form>
                 </div>
