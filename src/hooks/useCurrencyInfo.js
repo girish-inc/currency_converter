@@ -1,11 +1,18 @@
-import {useEffect, useState} from "react"
+// Simplified useCurrencyInfo.js - No longer needs additional API calls
+import { useEffect, useState } from "react";
 
-function useCurrencyInfo(currency){
-    const [data, setData] = useState({})
+function useCurrencyInfo(currency) {
+    const [data, setData] = useState({});
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
     useEffect(() => {
         if (!currency) return;
 
-        // Using ExchangeRate-API - more reliable and free
+        setLoading(true);
+        setError(null);
+
+        // Main API call for exchange rates
         fetch(`https://api.exchangerate-api.com/v4/latest/${currency.toUpperCase()}`)
             .then((res) => {
                 if (!res.ok) {
@@ -14,10 +21,9 @@ function useCurrencyInfo(currency){
                 return res.json();
             })
             .then((res) => {
-                // This API returns: { base: "USD", rates: { EUR: 0.85, ... } }
                 if (res && res.rates) {
                     setData(res.rates);
-                    console.log("Currency data loaded:", res.rates);
+                    console.log("Currency exchange rates loaded:", res.rates);
                 } else {
                     console.error("Invalid response format:", res);
                     setData({});
@@ -25,7 +31,9 @@ function useCurrencyInfo(currency){
             })
             .catch((error) => {
                 console.error("Error fetching currency data:", error);
-                // Fallback to a backup API
+                setError(error.message);
+
+                // Fallback to backup API
                 fetch(`https://open.er-api.com/v6/latest/${currency.toUpperCase()}`)
                     .then((res) => res.json())
                     .then((res) => {
@@ -39,10 +47,22 @@ function useCurrencyInfo(currency){
                     .catch((backupError) => {
                         console.error("Backup API also failed:", backupError);
                         setData({});
+                        setError("Failed to load currency data");
+                    })
+                    .finally(() => {
+                        setLoading(false);
                     });
             })
-    }, [currency])
-    return data
+            .finally(() => {
+                setLoading(false);
+            });
+    }, [currency]);
+
+    return {
+        rates: data,
+        loading,
+        error
+    };
 }
 
 export default useCurrencyInfo;
