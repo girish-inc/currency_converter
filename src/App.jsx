@@ -3,6 +3,57 @@ import InputBox from './components/InputBox';
 import useCurrencyInfo from './hooks/useCurrencyInfo';
 import { formatCurrencyDisplay } from './Utilities/currencyData.js';
 
+// Smart formatting function for currency amounts
+const formatCurrencyAmount = (amount, currencyCode) => {
+    if (!amount || amount === 0) return '0';
+
+    // Currencies that typically don't use decimals
+    const noDecimalCurrencies = ['JPY', 'KRW', 'VND', 'IDR', 'CLP', 'PYG'];
+
+    // Very weak currencies that need more precision
+    const highPrecisionCurrencies = ['IRR', 'VES', 'LAK', 'SLL', 'GNF'];
+
+    const absAmount = Math.abs(amount);
+
+    if (noDecimalCurrencies.includes(currencyCode)) {
+        return Math.round(amount).toLocaleString();
+    }
+
+    if (highPrecisionCurrencies.includes(currencyCode)) {
+        if (absAmount < 1) return amount.toFixed(6);
+        if (absAmount < 100) return amount.toFixed(4);
+        return amount.toFixed(2);
+    }
+
+    // Smart precision based on amount size
+    if (absAmount < 0.01) return amount.toFixed(6);
+    if (absAmount < 0.1) return amount.toFixed(4);
+    if (absAmount < 1) return amount.toFixed(4);
+    if (absAmount < 100) return amount.toFixed(2);
+    if (absAmount < 10000) return amount.toFixed(2);
+
+    // For very large amounts, consider less precision
+    return amount.toFixed(2);
+};
+
+// Format exchange rate display
+const formatExchangeRate = (rate, fromCurrency, toCurrency) => {
+    if (!rate) return '';
+
+    const noDecimalCurrencies = ['JPY', 'KRW', 'VND', 'IDR', 'CLP', 'PYG'];
+
+    if (noDecimalCurrencies.includes(toCurrency)) {
+        return Math.round(rate).toLocaleString();
+    }
+
+    if (rate < 0.0001) return rate.toFixed(6);
+    if (rate < 0.01) return rate.toFixed(4);
+    if (rate < 1) return rate.toFixed(4);
+    if (rate < 100) return rate.toFixed(2);
+
+    return rate.toFixed(2);
+};
+
 function App() {
     const [amount, setAmount] = useState(1);
     const [from, setFrom] = useState("USD");
@@ -71,7 +122,7 @@ function App() {
                                     <p className="text-gray-400 text-xs">Loading exchange rates...</p>
                                 ) : currencyInfo[to] ? (
                                     <p className="text-gray-300 text-sm">
-                                        1 {formatCurrencyDisplay(from, "nameOnly")} = {currencyInfo[to].toFixed(4)} {formatCurrencyDisplay(to, "nameOnly")}
+                                        1 {formatCurrencyDisplay(from, "nameOnly")} = {formatExchangeRate(currencyInfo[to], from, to)} {formatCurrencyDisplay(to, "nameOnly")}
                                     </p>
                                 ) : (
                                     <p className="text-gray-500 text-xs">Select currencies to see exchange rate</p>
@@ -112,7 +163,7 @@ function App() {
                             <div className="w-full mb-6 mt-9">
                                 <InputBox
                                     label="To"
-                                    amount={convertedAmount}
+                                    amount={formatCurrencyAmount(convertedAmount, to)}
                                     currencyOptions={options}
                                     onCurrencyChange={(currency) => setTo(currency)}
                                     selectCurrency={to}
@@ -148,7 +199,7 @@ function App() {
                             ) : convertedAmount > 0 && currencyInfo[to] ? (
                                 <div className="w-full bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-xl p-4 text-center">
                                     <p className="text-white text-lg font-bold">
-                                        {amount} {from} = {convertedAmount} {to}
+                                        {formatCurrencyAmount(amount, from)} {from} = {formatCurrencyAmount(convertedAmount, to)} {to}
                                     </p>
                                 </div>
                             ) : (
