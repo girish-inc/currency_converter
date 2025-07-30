@@ -84,7 +84,7 @@ function App() {
                             <div className="w-full mb-9">
                                 <InputBox
                                     label="From"
-                                    amount={amount.toFixed(2)}
+                                    amount={amount}
                                     currencyOptions={options}
                                     onCurrencyChange={(currency) => setFrom(currency)}
                                     selectCurrency={from}
@@ -112,7 +112,7 @@ function App() {
                             <div className="w-full mb-6 mt-9">
                                 <InputBox
                                     label="To"
-                                    amount={convertedAmount.toFixed(2)}
+                                    amount={convertedAmount}
                                     currencyOptions={options}
                                     onCurrencyChange={(currency) => setTo(currency)}
                                     selectCurrency={to}
@@ -148,7 +148,7 @@ function App() {
                             ) : convertedAmount > 0 && currencyInfo[to] ? (
                                 <div className="w-full bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-xl p-4 text-center">
                                     <p className="text-white text-lg font-bold">
-                                        {amount.toFixed(2)} {from} = {convertedAmount.toFixed(2)} {to}
+                                        {amount} {from} = {convertedAmount} {to}
                                     </p>
                                 </div>
                             ) : (
