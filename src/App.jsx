@@ -1,11 +1,10 @@
-// Enhanced App.jsx
 import { useState, useEffect } from 'react';
 import InputBox from './components/InputBox';
 import useCurrencyInfo from './hooks/useCurrencyInfo';
 import { formatCurrencyDisplay } from './Utilities/currencyData.js';
 
 function App() {
-    const [amount, setAmount] = useState(1); // Initialize with 1
+    const [amount, setAmount] = useState(1);
     const [from, setFrom] = useState("USD");
     const [to, setTo] = useState("INR");
     const [convertedAmount, setConvertedAmount] = useState(0);
@@ -40,13 +39,13 @@ function App() {
 
     if (error) {
         return (
-            <div className="w-full h-screen flex justify-center items-center bg-gray-100">
-                <div className="bg-white p-8 rounded-lg shadow-lg text-center">
-                    <h2 className="text-xl font-bold text-red-600 mb-4">Error Loading Currency Data</h2>
-                    <p className="text-gray-600">{error}</p>
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex justify-center items-center">
+                <div className="bg-gray-800/80 backdrop-blur-xl p-8 rounded-2xl shadow-2xl text-center border border-gray-700">
+                    <h2 className="text-xl font-bold text-red-400 mb-4">Error Loading Currency Data</h2>
+                    <p className="text-gray-300">{error}</p>
                     <button
                         onClick={() => window.location.reload()}
-                        className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                        className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl transition-all duration-200 transform hover:scale-105"
                     >
                         Retry
                     </button>
@@ -56,98 +55,108 @@ function App() {
     }
 
     return (
-        <div
-            className="w-full h-screen flex flex-wrap justify-center items-center bg-cover bg-no-repeat"
-            style={{
-                backgroundImage: `url('https://images.pexels.com/photos/3532540/pexels-photo-3532540.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2')`,
-            }}
-        >
-            <div className="w-full">
-                <div className="w-full max-w-md mx-auto border border-gray-60 rounded-lg p-5 backdrop-blur-sm bg-white/30">
-                    {/* Header with current exchange rate - Fixed height */}
-                    <div className="text-center mb-4 h-16 flex flex-col justify-center">
-                        <h1 className="text-white text-lg font-bold mb-2">Currency Converter</h1>
-                        <div className="h-5 flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 relative overflow-hidden">
+            {/* Decorative gradient orbs */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full blur-3xl opacity-20 -translate-y-32 translate-x-32"></div>
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-blue-500 to-cyan-400 rounded-full blur-3xl opacity-20 translate-y-32 -translate-x-32"></div>
+
+            <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+                <div className="w-full max-w-md">
+                    <div className="bg-gray-800/40 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-gray-700/50">
+                        {/* Header - Fixed height */}
+                        <div className="text-center mb-8 h-16 flex flex-col justify-center">
+                            <h1 className="text-3xl font-bold text-white mb-2">Currency Converter</h1>
+                            <div className="h-5 flex items-center justify-center">
+                                {loading ? (
+                                    <p className="text-gray-400 text-xs">Loading exchange rates...</p>
+                                ) : currencyInfo[to] ? (
+                                    <p className="text-gray-300 text-sm">
+                                        1 {formatCurrencyDisplay(from, "nameOnly")} = {currencyInfo[to].toFixed(4)} {formatCurrencyDisplay(to, "nameOnly")}
+                                    </p>
+                                ) : (
+                                    <p className="text-gray-500 text-xs">Select currencies to see exchange rate</p>
+                                )}
+                            </div>
+                        </div>
+
+                        <form onSubmit={(e) => { e.preventDefault(); convert(); }}>
+                            {/* From Currency */}
+                            <div className="w-full mb-9">
+                                <InputBox
+                                    label="From"
+                                    amount={amount.toFixed(2)}
+                                    currencyOptions={options}
+                                    onCurrencyChange={(currency) => setFrom(currency)}
+                                    selectCurrency={from}
+                                    onAmountChange={(amount) => setAmount(amount)}
+                                    displayFormat="withFlagAndCode"
+                                    className="modern-dark"
+                                />
+                            </div>
+
+                            {/* Swap Button */}
+                            <div className="relative w-full h-0.5">
+                                <button
+                                    type="button"
+                                    className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-gray-600/50 hover:bg-gray-500/50 rounded-full flex items-center justify-center text-white transition-all duration-200 transform hover:scale-110 disabled:opacity-50 border border-gray-500/30"
+                                    onClick={swap}
+                                    disabled={loading}
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m0-4l-4-4" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {/* To Currency */}
+                            <div className="w-full mb-6 mt-9">
+                                <InputBox
+                                    label="To"
+                                    amount={convertedAmount.toFixed(2)}
+                                    currencyOptions={options}
+                                    onCurrencyChange={(currency) => setTo(currency)}
+                                    selectCurrency={to}
+                                    amountDisable
+                                    displayFormat="withFlagAndCode"
+                                    className="modern-dark"
+                                />
+                            </div>
+
+                            {/* Convert Button */}
+                            <button
+                                type="submit"
+                                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 mb-6 shadow-lg"
+                                disabled={loading || !currencyInfo[to]}
+                            >
+                                {loading ? (
+                                    <div className="flex items-center justify-center gap-2">
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                        Loading...
+                                    </div>
+                                ) : (
+                                    `Convert ${from} to ${to}`
+                                )}
+                            </button>
+                        </form>
+
+                        {/* Display conversion result - Fixed height */}
+                        <div className="h-20 flex items-center justify-center">
                             {loading ? (
-                                <p className="text-white/60 text-xs">Loading exchange rates...</p>
-                            ) : currencyInfo[to] ? (
-                                <p className="text-white/80 text-sm">
-                                    1 {formatCurrencyDisplay(from, "nameOnly")} = {currencyInfo[to].toFixed(4)} {formatCurrencyDisplay(to, "nameOnly")}
-                                </p>
+                                <div className="w-full bg-gray-700/30 rounded-xl p-4 text-center">
+                                    <p className="text-gray-400 text-sm">Loading conversion...</p>
+                                </div>
+                            ) : convertedAmount > 0 && currencyInfo[to] ? (
+                                <div className="w-full bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-xl p-4 text-center">
+                                    <p className="text-white text-lg font-bold">
+                                        {amount.toFixed(2)} {from} = {convertedAmount.toFixed(2)} {to}
+                                    </p>
+                                </div>
                             ) : (
-                                <p className="text-white/60 text-xs">Select currencies to see exchange rate</p>
+                                <div className="w-full p-4 text-center">
+                                    <p className="text-transparent text-lg">Placeholder for conversion result</p>
+                                </div>
                             )}
                         </div>
-                    </div>
-
-                    <form
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            convert();
-                        }}
-                    >
-                        <div className="w-full mb-1">
-                            <InputBox
-                                label="From"
-                                amount={amount}
-                                currencyOptions={options}
-                                onCurrencyChange={(currency) => setFrom(currency)}
-                                selectCurrency={from}
-                                onAmountChange={(amount) => setAmount(amount)}
-                                displayFormat="withFlagAndCode"
-                            />
-                        </div>
-
-                        <div className="relative w-full h-0.5">
-                            <button
-                                type="button"
-                                className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-white rounded-md bg-blue-600 text-white px-2 py-0.5 hover:bg-blue-700 transition-colors"
-                                onClick={swap}
-                                disabled={loading}
-                            >
-                                ⇅ swap
-                            </button>
-                        </div>
-
-                        <div className="w-full mt-1 mb-4">
-                            <InputBox
-                                label="To"
-                                amount={convertedAmount}
-                                currencyOptions={options}
-                                onCurrencyChange={(currency) => setTo(currency)}
-                                selectCurrency={to}
-                                amountDisable
-                                displayFormat="withFlagAndCode"
-                            />
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            disabled={loading || !currencyInfo[to]}
-                        >
-                            {loading ? 'Loading...' : `Convert ${from} to ${to}`}
-                        </button>
-                    </form>
-
-                    {/* Display conversion result - Fixed height */}
-                    <div className="mt-4 h-16 flex items-center justify-center">
-                        {loading ? (
-                            <div className="p-3 bg-white/20 rounded-lg text-center w-full">
-                                <p className="text-white/60 text-sm">Loading conversion...</p>
-                            </div>
-                        ) : convertedAmount > 0 && currencyInfo[to] ? (
-                            <div className="p-3 bg-white/20 rounded-lg text-center w-full">
-                                <p className="text-white text-sm">
-                                    <span className="font-bold">{amount} {from}</span> =
-                                    <span className="font-bold"> {convertedAmount.toFixed(2)} {to}</span>
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="p-3 bg-transparent rounded-lg text-center w-full">
-                                <p className="text-transparent text-sm">Placeholder for conversion result</p>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>
